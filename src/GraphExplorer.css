@@ -1,0 +1,64 @@
+
+.graph-canvas {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.graph-canvas-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: #111923;
+}
+
+.graph-canvas-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.graph-canvas-toolbar button:hover:not(:disabled) {
+  border-color: #0f766e;
+  background: #1e293b;
+  color: #5eead4;
+}
+
+.graph-canvas-toolbar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.graph-canvas-toolbar button:focus-visible {
+  outline: 2px solid #5eead4;
+  outline-offset: 2px;
+}
+
+.relationship-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #5eead4;
+}
+
+.relationship-heading h4 {
+  overflow-wrap: anywhere;
+}
+
+.graph-search-results button,
+.graph-details button {
+  cursor: pointer;
+}
