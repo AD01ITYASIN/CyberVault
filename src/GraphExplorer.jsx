@@ -14,7 +14,7 @@ import {
 
 import './GraphExplorer.css'
 
-const API = 'http://localhost:3001/api'
+const API = 'https://cyber-vault-pu6h.vercel.app/api'
 
 const stylesheet = [
   {
