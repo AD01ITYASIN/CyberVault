@@ -10,7 +10,7 @@ import {
   X,
 } from 'lucide-react'
 
-const API_URL = 'http://localhost:3001/api/suspects'
+const API_URL = 'https://cyber-vault-pu6h.vercel.app/api/suspects'
 
 const emptyForm = {
   suspect_id: '',
