@@ -8,7 +8,7 @@ import {
   CircleDot,
 } from 'lucide-react'
 
-const API = 'http://localhost:3001/api'
+const API = 'https://cyber-vault-pu6h.vercel.app/api'
 
 const LABEL_DETAILS = {
   Case: 'Investigation case records',
