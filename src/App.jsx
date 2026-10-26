@@ -28,7 +28,7 @@ import {
 
 import './App.css'
 
-const API_BASE = 'http://localhost:3001/api'
+const API_BASE = 'https://cyber-vault-pu6h.vercel.app/api'
 
 const navigation = [
   { label: 'Overview', icon: LayoutDashboard },
