@@ -12,7 +12,7 @@ import {
   GitBranch,
 } from 'lucide-react'
 
-const API = 'http://localhost:3001/api'
+const API = 'https://cyber-vault-pu6h.vercel.app/api'
 
 export default function GraphAnalytics() {
   const [mode, setMode] = useState('pagerank')
