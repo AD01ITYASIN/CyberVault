@@ -1,5 +1,5 @@
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'https://cyber-vault-pu6h.vercel.app/api';
 
 export async function getHealth() {
   const response = await fetch(`${API_BASE}/health`);
