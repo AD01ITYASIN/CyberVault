@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 
 const express = require('express');
@@ -8,9 +9,19 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const DATABASE = process.env.NEO4J_DATABASE || 'cybervault';
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Allow local development and the deployed frontend.
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins
+}));
+
 app.use(express.json());
 
+// Neo4j connection using environment variables.
 const driver = neo4j.driver(
   process.env.NEO4J_URI,
   neo4j.auth.basic(
@@ -45,13 +56,14 @@ app.get('/api/health', async (req, res) => {
       status: 'connected',
       database: DATABASE,
       nodes: record.get('nodes').toNumber(),
-      relationships: record.get('relationships').toNumber(),
+      relationships: record.get('relationships').toNumber()
     });
   } catch (error) {
     console.error('Neo4j health check failed:', error.message);
+
     res.status(500).json({
       status: 'error',
-      message: 'Could not query the Neo4j database.',
+      message: 'Could not query the Neo4j database.'
     });
   } finally {
     await session.close();
@@ -94,13 +106,14 @@ app.get('/api/suspects', async (req, res) => {
         name: record.get('name'),
         alias: record.get('alias'),
         status: record.get('status'),
-        element_id: record.get('element_id'),
-      })),
+        element_id: record.get('element_id')
+      }))
     });
   } catch (error) {
     console.error('Suspects query failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not retrieve suspects.',
+      error: 'Could not retrieve suspects.'
     });
   } finally {
     await session.close();
@@ -121,7 +134,7 @@ app.post('/api/suspects', async (req, res) => {
     !name.trim()
   ) {
     return res.status(400).json({
-      error: 'Suspect ID and name are required.',
+      error: 'Suspect ID and name are required.'
     });
   }
 
@@ -149,7 +162,7 @@ app.post('/api/suspects', async (req, res) => {
         status:
           typeof status === 'string' && status.trim()
             ? status.trim()
-            : 'Under Investigation',
+            : 'Under Investigation'
       }
     );
 
@@ -160,8 +173,8 @@ app.post('/api/suspects', async (req, res) => {
         suspect_id: record.get('suspect_id'),
         name: record.get('name'),
         alias: record.get('alias'),
-        status: record.get('status'),
-      },
+        status: record.get('status')
+      }
     });
   } catch (error) {
     if (
@@ -169,13 +182,14 @@ app.post('/api/suspects', async (req, res) => {
       error.code?.includes('ConstraintVerificationFailed')
     ) {
       return res.status(409).json({
-        error: 'That suspect ID already exists.',
+        error: 'That suspect ID already exists.'
       });
     }
 
     console.error('Create suspect failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not create suspect.',
+      error: 'Could not create suspect.'
     });
   } finally {
     await session.close();
@@ -192,7 +206,7 @@ app.put('/api/suspects/:id', async (req, res) => {
 
   if (typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({
-      error: 'Suspect name is required.',
+      error: 'Suspect name is required.'
     });
   }
 
@@ -218,13 +232,13 @@ app.put('/api/suspects/:id', async (req, res) => {
         status:
           typeof status === 'string' && status.trim()
             ? status.trim()
-            : 'Under Investigation',
+            : 'Under Investigation'
       }
     );
 
     if (!result.records.length) {
       return res.status(404).json({
-        error: 'Suspect not found.',
+        error: 'Suspect not found.'
       });
     }
 
@@ -235,13 +249,14 @@ app.put('/api/suspects/:id', async (req, res) => {
         suspect_id: record.get('suspect_id'),
         name: record.get('name'),
         alias: record.get('alias'),
-        status: record.get('status'),
-      },
+        status: record.get('status')
+      }
     });
   } catch (error) {
     console.error('Update suspect failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not update suspect.',
+      error: 'Could not update suspect.'
     });
   } finally {
     await session.close();
@@ -267,18 +282,19 @@ app.delete('/api/suspects/:id', async (req, res) => {
 
     if (!result.records.length) {
       return res.status(404).json({
-        error: 'Suspect not found.',
+        error: 'Suspect not found.'
       });
     }
 
     res.json({
       message: 'Suspect deleted successfully.',
-      suspect_id: result.records[0].get('deleted_id'),
+      suspect_id: result.records[0].get('deleted_id')
     });
   } catch (error) {
     console.error('Delete suspect failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not delete suspect.',
+      error: 'Could not delete suspect.'
     });
   } finally {
     await session.close();
@@ -323,7 +339,7 @@ app.get('/api/graph', async (req, res) => {
 
     if (!result.records.length) {
       return res.status(404).json({
-        error: 'Suspect not found.',
+        error: 'Suspect not found.'
       });
     }
 
@@ -359,9 +375,9 @@ app.get('/api/graph', async (req, res) => {
           suspectId: currentSuspectId,
           properties: {
             suspect_id: currentSuspectId,
-            name: suspectName,
-          },
-        },
+            name: suspectName
+          }
+        }
       });
 
       const targetId = record.get('targetElement');
@@ -379,8 +395,8 @@ app.get('/api/graph', async (req, res) => {
           id: targetId,
           label: String(displayName(properties, targetId)),
           type: labels[0] || 'Entity',
-          properties,
-        },
+          properties
+        }
       });
 
       const edgeSource = record.get('edgeSource');
@@ -391,20 +407,21 @@ app.get('/api/graph', async (req, res) => {
           id: `${edgeSource}-${relationship}-${edgeTarget}`,
           source: edgeSource,
           target: edgeTarget,
-          label: relationship,
-        },
+          label: relationship
+        }
       });
     }
 
     res.json({
       suspectId,
       nodes: Array.from(nodes.values()),
-      edges,
+      edges
     });
   } catch (error) {
     console.error('Graph query failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not load graph data.',
+      error: 'Could not load graph data.'
     });
   } finally {
     await session.close();
@@ -450,17 +467,18 @@ app.get('/api/cases', async (req, res) => {
       status: record.get('status'),
       severity: record.get('severity'),
       date_opened: record.get('date_opened'),
-      properties: record.get('properties'),
+      properties: record.get('properties')
     }));
 
     res.json({
       count: cases.length,
-      cases,
+      cases
     });
   } catch (error) {
     console.error('Cases query failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not retrieve investigation cases.',
+      error: 'Could not retrieve investigation cases.'
     });
   } finally {
     await session.close();
@@ -505,17 +523,18 @@ app.get('/api/evidence', async (req, res) => {
       title: record.get('title'),
       type: record.get('type'),
       description: record.get('description'),
-      properties: record.get('properties'),
+      properties: record.get('properties')
     }));
 
     res.json({
       count: evidence.length,
-      evidence,
+      evidence
     });
   } catch (error) {
     console.error('Evidence query failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not retrieve evidence records.',
+      error: 'Could not retrieve evidence records.'
     });
   } finally {
     await session.close();
@@ -539,7 +558,7 @@ app.get('/api/data-management/summary', async (req, res) => {
 
     const labels = result.records.map(record => ({
       label: record.get('label'),
-      count: record.get('total').toNumber(),
+      count: record.get('total').toNumber()
     }));
 
     const totals = await session.run(`
@@ -550,12 +569,13 @@ app.get('/api/data-management/summary', async (req, res) => {
     res.json({
       database: DATABASE,
       totalNodes: totals.records[0].get('totalNodes').toNumber(),
-      labels,
+      labels
     });
   } catch (error) {
     console.error('Data management summary failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not retrieve database summary.',
+      error: 'Could not retrieve database summary.'
     });
   } finally {
     await session.close();
@@ -575,14 +595,14 @@ app.get('/api/data-management/records', async (req, res) => {
     'Malware',
     'Officer',
     'Organization',
-    'Suspect',
+    'Suspect'
   ];
 
   const label = String(req.query.label || '');
 
   if (!allowedLabels.includes(label)) {
     return res.status(400).json({
-      error: 'Invalid node label.',
+      error: 'Invalid node label.'
     });
   }
 
@@ -602,18 +622,19 @@ app.get('/api/data-management/records', async (req, res) => {
 
     const records = result.records.map(record => ({
       elementId: record.get('elementId'),
-      ...record.get('properties'),
+      ...record.get('properties')
     }));
 
     res.json({
       label,
       count: records.length,
-      records,
+      records
     });
   } catch (error) {
     console.error('Data records query failed:', error.message);
+
     res.status(500).json({
-      error: 'Could not retrieve database records.',
+      error: 'Could not retrieve database records.'
     });
   } finally {
     await session.close();
@@ -622,7 +643,7 @@ app.get('/api/data-management/records', async (req, res) => {
 
 // --------------------------------------------------
 // GRAPH ANALYTICS: PAGERANK
-// Uses the existing GDS projection: cybervaultGraph
+// Requires the cybervaultGraph GDS projection.
 // --------------------------------------------------
 
 app.get('/api/analytics/pagerank', async (req, res) => {
@@ -638,7 +659,7 @@ app.get('/api/analytics/pagerank', async (req, res) => {
     if (!graphCheck.records[0]?.get('exists')) {
       return res.status(400).json({
         error:
-          'Graph projection cybervaultGraph does not exist. Create the GDS graph projection in Neo4j first.',
+          'Graph projection cybervaultGraph does not exist. Create the GDS graph projection in Neo4j first.'
       });
     }
 
@@ -676,7 +697,7 @@ app.get('/api/analytics/pagerank', async (req, res) => {
         id: record.get('id'),
         name: String(name),
         type: labels[0] || 'Entity',
-        score: Number(record.get('score')),
+        score: Number(record.get('score'))
       };
     });
 
@@ -686,14 +707,14 @@ app.get('/api/analytics/pagerank', async (req, res) => {
         'Entities ranked by their PageRank score in cybervaultGraph.',
       graph: 'cybervaultGraph',
       count: rankings.length,
-      rankings,
+      rankings
     });
   } catch (error) {
     console.error('PageRank calculation failed:', error.message);
 
     res.status(500).json({
       error:
-        'PageRank calculation failed. Check that GDS is installed and cybervaultGraph exists.',
+        'PageRank calculation failed. Check that GDS is installed and cybervaultGraph exists.'
     });
   } finally {
     await session.close();
@@ -713,7 +734,7 @@ app.get('/api/analytics/shortest-path', async (req, res) => {
 
     if (!source || !target) {
       return res.status(400).json({
-        error: 'Both source and target entity IDs are required.',
+        error: 'Both source and target entity IDs are required.'
       });
     }
 
@@ -754,7 +775,7 @@ app.get('/api/analytics/shortest-path', async (req, res) => {
         length: null,
         path: [],
         edges: [],
-        message: 'No path found between these entities.',
+        message: 'No path found between these entities.'
       });
     }
 
@@ -784,7 +805,7 @@ app.get('/api/analytics/shortest-path', async (req, res) => {
       return {
         id: node.elementId,
         name: String(name),
-        type: labels[0] || 'Entity',
+        type: labels[0] || 'Entity'
       };
     });
 
@@ -792,14 +813,14 @@ app.get('/api/analytics/shortest-path', async (req, res) => {
       length: path.length,
       path: formattedPath,
       edges: path.segments.map(segment => ({
-        type: segment.relationship.type,
-      })),
+        type: segment.relationship.type
+      }))
     });
   } catch (error) {
     console.error('Shortest path endpoint failed:', error.message);
 
     res.status(500).json({
-      error: 'Could not calculate the shortest path.',
+      error: 'Could not calculate the shortest path.'
     });
   } finally {
     await session.close();
@@ -811,7 +832,7 @@ app.get('/api/analytics/shortest-path', async (req, res) => {
 // --------------------------------------------------
 
 const server = app.listen(PORT, () => {
-  console.log(`CyberVault API running at http://localhost:${PORT}`);
+  console.log(`CyberVault API listening on port ${PORT}`);
 });
 
 async function shutdown() {
