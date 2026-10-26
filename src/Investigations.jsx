@@ -13,7 +13,7 @@ import {
 
 import './Investigations.css'
 
-const API = 'http://localhost:3001/api'
+const API = 'https://cyber-vault-pu6h.vercel.app/api'
 
 function displayValue(value) {
   if (value === null || value === undefined || value === '') {
